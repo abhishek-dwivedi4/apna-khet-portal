@@ -1,0 +1,479 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop AI Detector</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+
+<style>
+
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Inter',sans-serif;
+}
+
+/* BODY CENTER FIX */
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#e8f5e9,#c8e6c9);
+  padding:20px;
+}
+
+/* CONTAINER FIX */
+.container{
+  width:100%;
+  max-width:380px;
+  background:#ffffffee;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.15);
+  text-align:center;
+  animation:fadeIn 0.6s ease;
+}
+
+/* HEADING */
+h2{
+  color:#1b5e20;
+  margin-bottom:15px;
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+/* UPLOAD */
+.file-upload{
+  margin-bottom:10px;
+}
+
+.upload-btn{
+  display:block;
+  padding:12px;
+  background:#2e7d32;
+  color:#fff;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.upload-btn:hover{
+  background:#1b5e20;
+}
+
+#fileName{
+  font-size:12px;
+  margin-top:5px;
+  color:#666;
+}
+
+/* BUTTONS */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  margin-top:8px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.camera-btn{
+  background:#1565c0;
+  color:white;
+}
+
+.analyze-btn{
+  background:#2e7d32;
+  color:white;
+}
+
+/* PREVIEW */
+.preview img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+/* VIDEO */
+video{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+  display:none;
+}
+
+/* LOADER */
+.loader{
+  display:none;
+  margin-top:10px;
+}
+
+.loader span{
+  width:8px;
+  height:8px;
+  background:#2e7d32;
+  display:inline-block;
+  margin:3px;
+  border-radius:50%;
+  animation:jump 0.5s infinite alternate;
+}
+
+.loader span:nth-child(2){animation-delay:0.2s;}
+.loader span:nth-child(3){animation-delay:0.4s;}
+
+@keyframes jump{
+  to{transform:translateY(-6px);}
+}
+
+/* RESULT */
+.result{
+  margin-top:12px;
+  background:#f1f8e9;
+  padding:10px;
+  border-radius:10px;
+  text-align:left;
+  animation:fadeIn 0.4s ease;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🌾 Crop AI Detector</h2>
+
+<input id="phone" placeholder="Enter Phone Number">
+
+<div class="file-upload">
+  <label for="upload" class="upload-btn">📂 Upload Image</label>
+  <input type="file" id="upload" hidden>
+  <p id="fileName">No file selected</p>
+</div>
+
+<button class="camera-btn" onclick="startCamera()">📸 Open Camera</button>
+
+<video id="video" autoplay></video>
+<button onclick="capture()" id="captureBtn" style="display:none;">Capture</button>
+
+<button class="analyze-btn" onclick="predict()">Analyze</button>
+
+<div class="loader" id="loader">
+  <span></span><span></span><span></span>
+</div>
+
+<div class="preview">
+  <img id="preview">
+</div>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+const API = "PASTE_API";
+const MODEL_URL = "PASTE_MODEL/";
+
+let model;
+let imageElement = null;
+
+// Load model
+async function loadModel(){
+  model = await tmImage.load(
+    MODEL_URL + "model.json",
+    MODEL_URL + "metadata.json"
+  );
+}
+loadModel();
+
+// Upload
+document.getElementById("upload").addEventListener("change", function(e){
+  const file = e.target.files[0];
+
+  if(file){
+    document.getElementById("fileName").innerText = file.name;
+
+    const img = document.getElementById("preview");
+    img.src = URL.createObjectURL(file);
+    imageElement = img;
+  }
+});
+
+// Camera
+function startCamera(){
+  const video = document.getElementById("video");
+
+  navigator.mediaDevices.getUserMedia({video:true})
+  .then(stream=>{
+    video.srcObject = stream;
+    video.style.display="block";
+    document.getElementById("captureBtn").style.display="block";
+  });
+}
+
+// Capture
+function capture(){
+  const video = document.getElementById("video");
+  const canvas = document.createElement("canvas");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  canvas.getContext("2d").drawImage(video,0,0);
+
+  const img = document.getElementById("preview");
+  img.src = canvas.toDataURL();
+
+  imageElement = img;
+
+  video.style.display="none";
+  document.getElementById("captureBtn").style.display="none";
+}
+
+// Predict
+async function predict(){
+
+  const phone = document.getElementById("phone").value;
+
+  if(!imageElement){
+    alert("Upload or capture image");
+    return;
+  }
+
+  if(!phone){
+    alert("Enter phone number");
+    return;
+  }
+
+  document.getElementById("loader").style.display="block";
+
+  const prediction = await model.predict(imageElement);
+
+  let best = prediction.reduce((a,b)=>
+    a.probability > b.probability ? a : b
+  );
+
+  const disease = best.className;
+  const confidence = (best.probability*100).toFixed(1);
+
+  const sol = getSolution(disease);
+
+  document.getElementById("loader").style.display="none";
+
+  document.getElementById("result").innerHTML = `
+    <div class="result">
+      <b>Disease:</b> ${disease}<br>
+      <b>Confidence:</b> ${confidence}%<br><br>
+
+      🌿 <b>Organic:</b><br>${sol.organic}<br><br>
+      🧪 <b>Chemical:</b><br>${sol.inorganic}
+    </div>
+  `;
+}
+
+  // 1. SMART DISEASE SOLUTION & MEDICINE MATCHER
+function getSolution(diseaseName) {
+  const d = String(diseaseName || "").toLowerCase().trim();
+
+  // A. HEALTHY LEAF (SAHI FASOL - KOI DAWAI NAHI CHAHIYE)
+  if (d.includes("healthy") || d.includes("fresh") || d.includes("normal") || d.includes("swasth") || d.includes("clean")) {
+    return {
+      status: "Swasth Fasol (Healthy Leaf)",
+      isHealthy: true,
+      organic: "🌱 <b>Jaivik Advice:</b> Khet swasth hai! Niyamit compost (khaad) daalein aur samay par sinchai karein.",
+      chemical: "❌ <b>Rasayanik Advice:</b> Aapki fasol swasth hai, kisi rasayanik dawai ya keetnashak ki zaroorat NAHI hai."
+    };
+  }
+
+  // B. LEAF SPOT / BACTERIAL SPOT / ALTERNARIA
+  if (d.includes("spot") || d.includes("alternaria") || d.includes("cercospora") || d.includes("dhabba")) {
+    return {
+      status: "Patte par Dhabbe (Leaf Spot)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Neem oil (5ml per liter paani) + thoda liquid soap ghol kar spray karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) ya Copper Oxychloride 50% WP (2.5g/L) spray karein."
+    };
+  }
+
+  // C. BLIGHT (EARLY BLIGHT / LATE BLIGHT / LEAF BLIGHT)
+  if (d.includes("blight") || d.includes("jhursa") || d.includes("scorching") || d.includes("scab")) {
+    return {
+      status: "Jhursa Rog (Blight Disease)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Trichoderma viride (5g/L paani) ka ghol banakar jado aur patto par chhirkav karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Ridomil Gold (Metalaxyl + Mancozeb 2g/L) ya Azoxystrobin (1ml/L) spray karein."
+    };
+  }
+
+  // D. RUST (BROWN RUST / YELLOW RUST / BLACK RUST)
+  if (d.includes("rust") || d.includes("gehua") || d.includes("ratuwa") || d.includes("gerui")) {
+    return {
+      status: "Gerui / Ratuwa Rog (Rust Disease)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Baking soda (5g/L paani) + Neem oil solution patto par spray karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Propiconazole 25% EC (Tilt 1ml/L paani) ghol kar spray karein."
+    };
+  }
+
+  // E. POWDERY MILDEW / DOWNY MILDEW
+  if (d.includes("mildew") || d.includes("powdery") || d.includes("downy") || d.includes("safed")) {
+    return {
+      status: "Safed Fafundi (Mildew Disease)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Khatai wali dahi/chhaachh (100ml/L paani) ghol kar 5 din ke antar par spray karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Water Soluble Sulfur 80% WP (3g/L) ya Hexaconazole 5% EC (2ml/L) spray karein."
+    };
+  }
+
+  // F. MOSAIC VIRUS / LEAF CURL / YELLOW MOSAIC
+  if (d.includes("mosaic") || d.includes("curl") || d.includes("virus") || d.includes("yellow") || d.includes("pila")) {
+    return {
+      status: "Mosaic Virus / Patti Modak Rog",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Yellow Sticky Traps khet mein lagayein aur Neem oil 10000 ppm spray karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Imidacloprid 17.8% SL (0.5ml/L) ya Thiamethoxam 25% WG (0.5g/L) spray karein."
+    };
+  }
+
+  // G. PEST / CATERPILLAR / BORER / APHID / KEEDA
+  if (d.includes("pest") || d.includes("aphid") || d.includes("thrips") || d.includes("borer") || d.includes("worm") || d.includes("keeda")) {
+    return {
+      status: "Keet Aakraman (Pest Attack)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Lahsun-Mirch kadha + Neem oil spray karein aur Pheromone traps lagayein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Emamectin Benzoate 5% SG (0.5g/L) ya Chlorantraniliprole 18.5% SC (0.4ml/L) spray karein."
+    };
+  }
+
+  // H. WILT / ROT / ROOT ROT
+  if (d.includes("wilt") || d.includes("rot") || d.includes("damping") || d.includes("ukhata")) {
+    return {
+      status: "Ukhata / Jad Galan (Wilt & Rot)",
+      isHealthy: false,
+      organic: "🌿 <b>Jaivik Upay:</b> Pseudomonas fluorescens (10g/L) se jado ki drenching karein.",
+      chemical: "🧪 <b>Rasayanik Dawai:</b> Carbendazim 50% WP (2g/L paani) se jado ke paas drenching karein."
+    };
+  }
+
+  // DEFAULT UNKNOWN DISEASE
+  return {
+    status: "Fasal Infection",
+    isHealthy: false,
+    organic: "🌿 <b>Jaivik Upay:</b> Neem oil solution (5ml/L paani) spray karein.",
+    chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) spray karein aur Krishi Kendra se salah lein."
+  };
+}
+
+
+// 2. ACCURATE PREDICT FUNCTION
+async function predict() {
+  const phone = document.getElementById("aiPhone").value.trim();
+  const fileInput = document.getElementById("imageUpload");
+  const preview = document.getElementById("imgPreview");
+  const canvas = document.getElementById("canvas");
+  const resultBox = document.getElementById("aiResult");
+
+  if (!phone) { alert("Kripya registered phone number darj karein!"); return; }
+  if (!model) { alert("AI Model load ho raha hai. 2 second baad try karein."); return; }
+
+  resultBox.innerHTML = "⏳ AI photo ki jaanch kar raha hai...";
+
+  const hiddenCanvas = document.createElement("canvas");
+  hiddenCanvas.width = 224;
+  hiddenCanvas.height = 224;
+  const ctx = hiddenCanvas.getContext("2d");
+
+  let sourceImg = new Image();
+
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    sourceImg.src = URL.createObjectURL(fileInput.files[0]);
+    await new Promise((res) => { sourceImg.onload = res; });
+  } else if (preview && preview.style.display !== "none" && preview.src) {
+    sourceImg.src = preview.src;
+    await new Promise((res) => { sourceImg.onload = res; });
+  } else if (canvas && canvas.width > 0) {
+    sourceImg.src = canvas.toDataURL("image/png");
+    await new Promise((res) => { sourceImg.onload = res; });
+  } else {
+    alert("Photo upload karein ya camera se khinchein!");
+    return;
+  }
+
+  ctx.drawImage(sourceImg, 0, 0, 224, 224);
+
+  try {
+    const prediction = await model.predict(hiddenCanvas);
+    prediction.sort((a, b) => b.probability - a.probability);
+
+    const bestMatch = prediction[0];
+    const diseaseName = bestMatch.className;
+    const confidence = (bestMatch.probability * 100).toFixed(1);
+    const sol = getSolution(diseaseName);
+
+    if (sol.isHealthy) {
+      // GREEN CARD FOR HEALTHY FASOL
+      resultBox.innerHTML = `
+        <div style="background:#f0fff4; border:2px solid #22c55e; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
+          <h3 style="color:#15803d; margin-bottom:4px;">🌱 Result: ${diseaseName} (${confidence}%)</h3>
+          <p style="font-size:14px; color:#166534; font-weight:700; margin-bottom:8px;">✅ Aapki fasol ekdum swasth hai!</p>
+          <hr style="margin:8px 0; border:0; border-top:1px solid #bbf7d0;">
+          <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.organic}</p>
+          <br>
+          <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.chemical}</p>
+        </div>
+      `;
+    } else {
+      // RED ALERT CARD FOR DISEASED FASOL WITH EXACT MEDICINE NAMES
+      resultBox.innerHTML = `
+        <div style="background:#fff5f5; border:2px solid #ef4444; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
+          <h3 style="color:#991b1b; margin-bottom:4px;">🚨 Disease Detected: ${diseaseName}</h3>
+          <p style="font-size:13px; color:#991b1b; font-weight:700; margin-bottom:8px;">📌 Category: ${sol.status} (Confidence: ${confidence}%)</p>
+          <hr style="margin:8px 0; border:0; border-top:1px solid #fca5a5;">
+          <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.organic}</p>
+          <br>
+          <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.chemical}</p>
+        </div>
+      `;
+
+      // Auto save problem to backend only if diseased
+      postData({
+        action: "addProblemByPhone",
+        phone: phone,
+        problemType: "AI Detected: " + diseaseName,
+        description: `Confidence: ${confidence}% | ${sol.status}`
+      });
+    }
+
+  } catch (err) {
+    console.error("AI Error:", err);
+    resultBox.innerHTML = "❌ AI Detection failed. Clear photo upload karein.";
+  }
+}
+
+</script>
+
+</body>
+</html>

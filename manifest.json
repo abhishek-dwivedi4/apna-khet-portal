@@ -1,0 +1,17 @@
+{
+  "name": "Apna Khet - Smart Agriculture Portal",
+  "short_name": "Apna Khet",
+  "description": "Smart Agriculture Portal for Farmers & Admins",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1f6b2c",
+  "icons": [
+    {
+      "src": "logo pana khet.jpeg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

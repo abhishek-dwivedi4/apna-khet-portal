@@ -1,0 +1,360 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kisan Dashboard - Apna Khet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    
+    :root{
+      --green:#1f6b2c;
+      --green-dark:#0f3f17;
+      --green-light:#dcefcf;
+      --gold:#d79a1e;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#dde5d8;
+      --bg:#f5f7f2;
+      --shadow:0 10px 28px rgba(0,0,0,0.10);
+    }
+
+    body{ background:var(--bg); color:var(--text); }
+    .top-strip{ background:#ead8b8; height:22px; width:100%; }
+    
+    .navbar{ 
+      background:rgba(15,15,15,0.92); 
+      color:white; 
+      position:sticky; 
+      top:0; 
+      z-index:1000; 
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); 
+    }
+
+    .nav-inner{ 
+      max-width:1400px; 
+      margin:auto; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      gap:20px; 
+      padding:14px 20px; 
+      flex-wrap:wrap; 
+    }
+
+    .brand{ display:flex; align-items:center; gap:14px; min-width:260px; }
+    .brand-logo{ width:64px; height:64px; border-radius:14px; overflow:hidden; background:#fff; flex-shrink:0; }
+    .brand-logo img{ width:100%; height:100%; object-fit:cover; }
+    .brand-text h1{ font-size:28px; line-height:1; font-weight:900; color:#fff; margin-bottom:6px; }
+    .brand-text p{ font-size:12px; color:rgba(255,255,255,0.75); }
+
+    .nav-links{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .nav-links a, .nav-links button{ 
+      color:#fff; 
+      text-decoration:none; 
+      font-size:14px; 
+      font-weight:600; 
+      padding:10px 14px; 
+      border-radius:8px; 
+      background:transparent; 
+      border:none; 
+      cursor:pointer; 
+      transition:0.2s; 
+    }
+    .nav-links a:hover, .nav-links button:hover{ background:rgba(255,255,255,0.1); }
+    .logout-btn{ background:rgba(239,68,68,0.2) !important; color:#f87171 !important; border:1px solid rgba(239,68,68,0.4) !important; }
+    .logout-btn:hover{ background:#dc2626 !important; color:white !important; }
+
+    .hero{
+      min-height:300px;
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80') center/cover;
+      display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 20px; color:white;
+    }
+    .hero h2{ font-size:42px; font-weight:900; margin-bottom:12px; }
+    .hero p{ font-size:17px; max-width:850px; margin:0 auto 16px; color:rgba(255,255,255,0.9); }
+
+    .highlight-bar{ 
+      max-width:980px; 
+      margin:-28px auto 28px; 
+      background:var(--gold); 
+      color:white; 
+      padding:14px 26px; 
+      text-align:center; 
+      font-size:26px; 
+      font-weight:900; 
+      border-radius:0 0 20px 20px; 
+      box-shadow:var(--shadow); 
+    }
+
+    .container{ max-width:1300px; margin:auto; padding:0 18px 34px; }
+
+    /* SEARCH BAR */
+    .search-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:24px; }
+    .section-title{ background:#eef5df; color:#254c11; font-weight:800; font-size:20px; padding:14px 16px; border-bottom:1px solid #dae6c7; }
+    .section-body{ padding:18px; }
+    
+    .search-row{ display:grid; grid-template-columns:1fr auto; gap:12px; }
+    input{ width:100%; padding:12px 14px; border:1px solid #cfd6c7; background:#fff; font-size:15px; outline:none; border-radius:4px; }
+    input:focus{ border-color:var(--green); }
+    .btn{ padding:12px 22px; background:var(--green); color:white; border:none; font-weight:800; cursor:pointer; font-size:15px; border-radius:4px; }
+    .btn:hover{ background:var(--green-dark); }
+
+    /* GRID LAYOUT FOR DASHBOARD SECTIONS */
+    .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+
+    .card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:20px; overflow:hidden; }
+    .card-body{ padding:18px; }
+
+    .info-row{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+    .info-row:last-child{ border-bottom:none; }
+    .info-label{ font-weight:600; color:#6b7280; font-size:14px; }
+    .info-val{ font-weight:800; color:#1f2937; font-size:15px; }
+
+    .badge{ padding:4px 10px; border-radius:4px; font-size:12px; font-weight:800; text-transform:uppercase; }
+    .pending{ background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+    .in-progress{ background:#cce5ff; color:#004085; border:1px solid #b8daff; }
+    .resolved{ background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+
+    .whatsapp-btn{ 
+      width:100%; padding:14px; background:#25d366; color:white; border:none; 
+      font-weight:800; font-size:15px; cursor:pointer; border-radius:6px; 
+      display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; 
+    }
+    .whatsapp-btn:hover{ background:#1ebd56; }
+
+    .footer{ margin-top:30px; text-align:center; color:#6b7280; font-size:13px; padding:20px 10px; }
+
+    @media (max-width:900px){
+      .dash-grid{ grid-template-columns:1fr; }
+      .search-row{ grid-template-columns:1fr; }
+      .hero h2{ font-size:30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-strip"></div>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-logo"><img src="logo pana khet.jpeg" alt="Apna Khet Logo"></div>
+        <div class="brand-text">
+          <h1>Apna Khet</h1>
+          <p>Apna Khet, Apni Pehchaan</p>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#ai">AI Crop Detector</a>
+        <a href="index.html#forms">Report Issue</a>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h2>🌾 Kisan Smart Dashboard</h2>
+      <p>Apne khet ki fasol, darj samasyaon ka status aur mausam advisory dekhein ek jagah.</p>
+    </div>
+  </section>
+
+  <div class="highlight-bar">KISAM PROFILE & SERVICE PORTAL</div>
+
+  <main class="container">
+
+    <!-- 🌤️ SECTION 1: LIVE WEATHER & ADVISORY -->
+    <div class="search-card">
+      <div class="section-title">🌤️ Mausam Jankari & Krishi Advisory</div>
+      <div class="section-body">
+        <div class="search-row">
+          <input type="text" id="weatherCity" placeholder="Enter City/District (e.g. Lucknow, Gorakhpur)" value="Lucknow">
+          <button class="btn" onclick="getWeather()">Fetch Weather</button>
+        </div>
+        <div id="weatherBox" style="display:none; margin-top:14px; background:#f0fff4; padding:16px; border-left:4px solid var(--green);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <div>
+              <h3 id="cityName" style="color:var(--green); font-size:22px;">-</h3>
+              <p id="weatherDesc" style="color:#4b5563;">-</p>
+            </div>
+            <div>
+              <span id="tempVal" style="font-size:32px; font-weight:900; color:var(--green-dark);">--°C</span>
+            </div>
+          </div>
+          <p id="farmTip" style="margin-top:10px; font-weight:700; color:#166534;">💡 <b>Farming Advisory:</b> Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH PHONE SECTION -->
+    <div class="search-card">
+      <div class="section-title">🔍 Search Registered Farmer Records</div>
+      <div class="section-body">
+        <div class="search-row">
+          <input type="text" id="phoneInput" placeholder="Enter 10-digit Phone Number">
+          <button class="btn" onclick="loadFarmerData()">Search Records</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div id="dashboardContent" class="dash-grid">
+      <div style="grid-column: 1 / -1; text-align:center; padding:30px; font-size:16px; color:#6b7280;">
+        ⏳ Please enter your phone number to fetch records.
+      </div>
+    </div>
+
+    <div class="footer">
+      © Apna Khet — Smart Agriculture Support Portal
+    </div>
+
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwsWWRGASW7x_3v50pbYWr4YzSO2GSveM7x--FnpaaQI8VvO8yeiuKQAv0QCuw0RXaZ/exec";
+
+    // Auto load phone from localStorage if present
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedPhone = localStorage.getItem("farmerPhone");
+      if(savedPhone){
+        document.getElementById("phoneInput").value = savedPhone;
+        loadFarmerData();
+      }
+      getWeather();
+    });
+
+    // 1. Weather Advisory Loader
+    async function getWeather() {
+      const city = document.getElementById("weatherCity").value.trim();
+      const box = document.getElementById("weatherBox");
+      if (!city) return;
+
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        if (!geoData.results || !geoData.results.length) return;
+
+        const { latitude: lat, longitude: lon, name } = geoData.results[0];
+        const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const wData = await wRes.json();
+        const { temperature: temp, weathercode: code } = wData.current_weather;
+
+        let desc = "Clear Sky", tip = "Fasol mein sinchai aur poshak tatva dene ke liye achha samay hai.";
+        if (code >= 1 && code <= 3) { desc = "Partly Cloudy"; tip = "Khet ki dekhbhal aur neendai-gudai karein."; }
+        else if (code >= 51 && code <= 99) { desc = "Rainy / Thunderstorm"; tip = "⚠️ Barish ki sambhavna! Sinchai aur keetnashak spray rokein."; }
+
+        document.getElementById("cityName").innerText = name;
+        document.getElementById("weatherDesc").innerText = `🌤️ ${desc}`;
+        document.getElementById("tempVal").innerText = `${temp}°C`;
+        document.getElementById("farmTip").innerHTML = `💡 <b>Farming Advisory:</b> ${tip}`;
+        box.style.display = "block";
+      } catch (e) { console.error(e); }
+    }
+
+    // 2. Fetch Farmer Data
+    async function loadFarmerData() {
+      const phone = document.getElementById("phoneInput").value.trim();
+      const container = document.getElementById("dashboardContent");
+
+      if (!phone) {
+        alert("Enter registered phone number!");
+        return;
+      }
+
+      container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:30px;">⏳ Fetching records...</div>`;
+
+      try {
+        const res = await fetch(`${API_URL}?action=searchFarmerByPhone&phone=${encodeURIComponent(phone)}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:#ef4444; font-weight:700;">❌ No farmer record found for this number.</div>`;
+          return;
+        }
+
+        localStorage.setItem("farmerPhone", phone);
+        const farmer = data.farmer || {};
+        const crops = data.crops || [];
+        const problems = data.problems || [];
+
+        let html = `
+          <!-- SECTION A: FARMER PROFILE CARD -->
+          <div class="card">
+            <div class="section-title">👤 Kisan Profile & Digital ID</div>
+            <div class="card-body">
+              <div class="info-row"><span class="info-label">Farmer Name:</span><span class="info-val">${farmer.name || "-"}</span></div>
+              <div class="info-row"><span class="info-label">Farmer ID (Name+Phone):</span><span class="info-val" style="color:var(--green);">${farmer.farmerId || "-"}</span></div>
+              <div class="info-row"><span class="info-label">Mobile Number:</span><span class="info-val">${farmer.phone || "-"}</span></div>
+              <div class="info-row"><span class="info-label">Village:</span><span class="info-val">${farmer.village || "-"}</span></div>
+              <div class="info-row"><span class="info-label">District / State:</span><span class="info-val">${farmer.district || "-"}, ${farmer.state || "-"}</span></div>
+              
+              <button class="whatsapp-btn" onclick="shareProfile('${farmer.name}', '${farmer.farmerId}')">
+                📲 Share Kisan ID Card on WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION B: CROP RECORDS -->
+          <div class="card">
+            <div class="section-title">🌾 Crop Records (Fasol Detail)</div>
+            <div class="card-body">
+              ${crops.length ? crops.map(c => `
+                <div style="background:#f9fafb; padding:12px; border:1px solid #e5e7eb; border-radius:6px; margin-bottom:10px;">
+                  <div class="info-row"><span class="info-label">Crop Name:</span><span class="info-val">${c.cropName}</span></div>
+                  <div class="info-row"><span class="info-label">Land Area:</span><span class="info-val">${c.landArea} Acres</span></div>
+                  <div class="info-row"><span class="info-label">Season / Date:</span><span class="info-val">${c.season || "-"} | ${c.sowingDate || "-"}</span></div>
+                </div>
+              `).join('') : '<p style="color:#6b7280;">No crop details added yet.</p>'}
+            </div>
+          </div>
+
+          <!-- SECTION C: REPORTED PROBLEMS & LIVE TRACKER -->
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="section-title">🚨 Reported Issues & Status Tracker</div>
+            <div class="card-body">
+              ${problems.length ? problems.map(p => {
+                let badgeStyle = "pending";
+                const st = String(p.status || "").toLowerCase();
+                if(st === "in progress") badgeStyle = "in-progress";
+                if(st === "resolved") badgeStyle = "resolved";
+
+                return `
+                  <div style="background:#fff; border:1px solid var(--border); padding:14px; border-radius:6px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <h4 style="color:var(--green-dark);">${p.problemType}</h4>
+                      <span class="badge ${badgeStyle}">${p.status || "Pending"}</span>
+                    </div>
+                    <p style="margin-top:6px; font-size:14px; color:#4b5563;">${p.description || "No description provided."}</p>
+                  </div>
+                `;
+              }).join('') : '<p style="color:#6b7280;">No field issues reported yet.</p>'}
+            </div>
+          </div>
+        `;
+
+        container.innerHTML = html;
+
+      } catch (err) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:30px; color:#ef4444;">⚠️ Network error. Please try again.</div>`;
+      }
+    }
+
+    // WhatsApp Share Helper
+    function shareProfile(name, id) {
+      const msg = `🌾 *Apna Khet Kisan Digital Card*\n\nName: ${name}\nFarmer ID: ${id}\n\nSmart Agri Support Portal.`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // Logout Helper
+    function logout() {
+      localStorage.removeItem("farmerPhone");
+      window.location.href = "farmer-login.html";
+    }
+  </script>
+</body>
+</html>
