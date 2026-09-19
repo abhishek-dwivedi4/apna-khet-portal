@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -235,7 +235,8 @@ input:focus{ border-color:#22c55e; box-shadow:0 0 15px rgba(34,197,94,0.4); }
   </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwsWWRGASW7x_3v50pbYWr4YzSO2GSveM7x--FnpaaQI8VvO8yeiuKQAv0QCuw0RXaZ/exec";
+// YAHAN APNA GOOGLE APPS SCRIPT KA "ANYONE" WALA NAYA LINK DAALNA HAI
+const API_URL = "https://script.google.com/macros/s/AKfycbxZQcci-TwVfIbRd-Uqt6D5XhQvNTWExRpbQwWfScRUd338QRsV0O1w0bfIgLJthP8w/exec"; 
 
 async function login(){
   const phone = document.getElementById("phone").value.trim();
@@ -249,13 +250,14 @@ async function login(){
   msg.innerHTML = "⏳ Validating credentials...";
 
   try{
-    const res = await fetch(API, {
+    // Google Apps Script CORS fix: Sending data as URLSearchParams (No headers needed)
+    const formData = new URLSearchParams();
+    formData.append('action', 'farmerLogin');
+    formData.append('phone', phone);
+
+    const res = await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({
-        action: "farmerLogin",
-        phone: phone
-      }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" }
+      body: formData
     });
     
     const data = await res.json();
