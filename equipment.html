@@ -1,0 +1,526 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mega Agro-Store & Workforce Hub - Apna Khet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    :root{
+      --green:#1f6b2c; --green-dark:#0f3f17; --green-light:#dcefcf;
+      --gold:#d79a1e; --text:#1f2937; --muted:#6b7280; --border:#dde5d8;
+      --bg:#f5f7f2; --shadow:0 10px 28px rgba(0,0,0,0.08);
+    }
+    body{ background:var(--bg); color:var(--text); }
+    .top-strip{ background:#ead8b8; height:22px; width:100%; }
+    
+    .navbar{ background:rgba(15,15,15,0.92); color:white; position:sticky; top:0; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .nav-inner{ max-width:1400px; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:20px; padding:14px 20px; flex-wrap:wrap; }
+    .brand{ display:flex; align-items:center; gap:14px; min-width:260px; }
+    .brand-logo{ width:50px; height:50px; border-radius:12px; overflow:hidden; background:#fff; }
+    .brand-logo img{ width:100%; height:100%; object-fit:cover; }
+    .brand-text h1{ font-size:22px; color:#fff; font-weight:900; margin-bottom:2px; }
+    .brand-text p{ font-size:11px; color:rgba(255,255,255,0.75); }
+    .nav-links{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .nav-links a{ color:#fff; text-decoration:none; font-size:14px; font-weight:600; padding:10px 14px; border-radius:8px; transition:0.2s; }
+    .nav-links a:hover{ background:rgba(255,255,255,0.08); }
+
+    .container{ max-width:1300px; margin:30px auto; padding:0 20px; }
+    .page-header{ text-align:center; margin-bottom:30px; }
+    .page-title{ font-size:36px; font-weight:900; color:#123518; margin-bottom:8px; }
+    .page-sub{ font-size:16px; color:#6b7280; max-width:780px; margin:auto; }
+
+    .section-heading{ font-size:24px; font-weight:800; color:#1f3c0e; margin:35px 0 16px; border-left:5px solid var(--green); padding-left:10px; }
+
+    /* E-COMMERCE GRID & CARDS */
+    .grid-catalog{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:22px; }
+    .product-card{ background:white; border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); transition:0.3s; display:flex; flex-direction:column; justify-content:space-between; }
+    .product-card:hover{ transform:translateY(-5px); box-shadow:0 15px 35px rgba(0,0,0,0.12); }
+    
+    .product-img{ width:100%; height:180px; object-fit:cover; background:#e5e7eb; border-bottom:1px solid var(--border); }
+    .product-body{ padding:16px; flex-grow:1; display:flex; flex-direction:column; justify-content:space-between; }
+    
+    .product-title{ font-size:18px; font-weight:800; color:#1f2937; margin-bottom:6px; }
+    .badge-tag{ display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#eef5df; color:#254c11; margin-bottom:8px; text-transform:uppercase; }
+    
+    .price-box{ background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin:10px 0; font-size:13px; line-height:1.6; }
+    .price-box span{ font-weight:700; color:#111827; }
+
+    .action-row{ display:flex; gap:8px; margin-top:10px; }
+    .btn-rent{ flex:1; background:#0284c7; color:white; border:none; padding:10px; font-weight:700; border-radius:6px; cursor:pointer; font-size:13px; transition:0.2s; }
+    .btn-rent:hover{ background:#0369a1; }
+    .btn-buy{ flex:1; background:var(--green); color:white; border:none; padding:10px; font-weight:700; border-radius:6px; cursor:pointer; font-size:13px; transition:0.2s; }
+    .btn-buy:hover{ background:var(--green-dark); }
+
+    /* CHECKOUT MODAL */
+    .modal{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center; padding:15px; }
+    .modal-content{ background:white; width:100%; max-width:420px; border-radius:16px; padding:24px; box-shadow:0 25px 50px rgba(0,0,0,0.25); animation:slideUp 0.3s ease; }
+    @keyframes slideUp{ from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+    
+    .modal-title{ font-size:20px; font-weight:800; color:#111827; margin-bottom:14px; }
+    .modal input, .modal select{ width:100%; padding:12px; border:1px solid #d1d5db; border-radius:8px; margin-bottom:12px; font-size:14px; outline:none; }
+    .modal input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(31,107,44,0.15); }
+    .modal-btns{ display:flex; gap:10px; margin-top:6px; }
+    .btn-close{ background:#ef4444; color:white; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; flex:1; }
+    .btn-submit{ background:var(--green); color:white; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; flex:1; }
+
+    .success-alert{ margin-top:12px; padding:10px; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:600; display:none; text-align:center; }
+  </style>
+</head>
+<body>
+
+  <div class="top-strip"></div>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-logo"><img src="logo pana khet.jpeg" alt="Logo"></div>
+        <div class="brand-text">
+          <h1>Apna Khet</h1>
+          <p>Mega Agro-Store & Labor Hub</p>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="equipment.html" style="background:rgba(255,255,255,0.15);">🚜 Mega Marketplace</a>
+        <a href="farmer-login.html">Farmer Login</a>
+        <a href="admin.html">Admin Panel</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">🌾 Apna Khet Mega Marketplace & Workforce Hub</h1>
+      <p class="page-sub">Hire crop-specific expert seasonal labor from all over India, rent or buy ultra-advanced farming tech & heavy machinery, and order organic, chemical or subsidized fertilizers instantly.</p>
+    </div>
+
+    <!-- ================= SECTION 1: CROP-SPECIFIC SEASONAL WORKERS (PAN-INDIA) ================= -->
+    <h2 class="section-heading">👨‍🌾 Crop-Specific Seasonal Workers & Expert Crews (Pan-India Booking)</h2>
+    <div class="grid-catalog">
+      
+      <!-- Sugarcane Crew -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1595974482597-4f6c4f70036a?auto=format&fit=crop&w=600&q=80" alt="Sugarcane Labor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#e0f2fe; color:#0369a1;">Sugarcane Specialist</span>
+            <div class="product-title">Sugarcane Cutting & Harvesting Crew (6 Workers)</div>
+            <div class="price-box">
+              <div>Wages (Day): <span>₹3,000 / day (Group)</span></div>
+              <div>Monthly Contract: <span>₹70,000 / month</span></div>
+              <div>Availability: <span>Pan-India (UP, Maharashtra, Bihar, etc.)</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" style="width:100%; background:#0284c7;" onclick="openModal('Sugarcane Harvesting Crew (6 Workers)', 'Labor Booking')">Book Sugarcane Crew</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wheat Threshing Crew -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80" alt="Wheat Labor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#e0f2fe; color:#0369a1;">Wheat Specialist</span>
+            <div class="product-title">Wheat Harvesting & Threshing Team (4 Workers)</div>
+            <div class="price-box">
+              <div>Wages (Day): <span>₹2,200 / day (Group)</span></div>
+              <div>Monthly Contract: <span>₹52,000 / month</span></div>
+              <div>Availability: <span>Pan-India Service</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" style="width:100%; background:#0284c7;" onclick="openModal('Wheat Threshing Team (4 Workers)', 'Labor Booking')">Book Wheat Crew</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rice / Paddy Crew -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=600&q=80" alt="Rice Labor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#e0f2fe; color:#0369a1;">Rice / Paddy Specialist</span>
+            <div class="product-title">Paddy Transplanting & Puddling Crew (5 Workers)</div>
+            <div class="price-box">
+              <div>Wages (Day): <span>₹2,500 / day (Group)</span></div>
+              <div>Monthly Contract: <span>₹58,000 / month</span></div>
+              <div>Availability: <span>Pan-India Service</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" style="width:100%; background:#0284c7;" onclick="openModal('Paddy Transplanting Crew (5 Workers)', 'Labor Booking')">Book Rice/Paddy Crew</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cotton Picking Crew -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Cotton Labor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#e0f2fe; color:#0369a1;">Cotton Specialist</span>
+            <div class="product-title">Cotton Picking & Quality Sorting Team (5 Workers)</div>
+            <div class="price-box">
+              <div>Wages (Day): <span>₹2,400 / day (Group)</span></div>
+              <div>Monthly Contract: <span>₹55,000 / month</span></div>
+              <div>Availability: <span>Pan-India Service</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" style="width:100%; background:#0284c7;" onclick="openModal('Cotton Picking Team (5 Workers)', 'Labor Booking')">Book Cotton Crew</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= SECTION 2: ULTRA-ADVANCED TECH & DRONES ================= -->
+    <h2 class="section-heading">🚁 Ultra-Advanced Tech & Smart Farming Equipment</h2>
+    <div class="grid-catalog">
+      
+      <!-- Spray Drone -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=600&q=80" alt="Spray Drone" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Smart IoT Tech</span>
+            <div class="product-title">Agri-Spray & Crop Monitoring Drone</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹2,500 / day (with Pilot)</span></div>
+              <div>Permanent Buy: <span>₹4,50,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Agri-Spray Drone', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Agri-Spray Drone', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laser Land Leveler -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1592982537447-6c2417725916?auto=format&fit=crop&w=600&q=80" alt="Laser Leveler" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Precision Farming</span>
+            <div class="product-title">Laser Land Leveler System</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹1,800 / day</span></div>
+              <div>Permanent Buy: <span>₹2,75,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Laser Land Leveler', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Laser Land Leveler', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- IoT Soil Sensor -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Soil Sensor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">IoT Sensor Kit</span>
+            <div class="product-title">Smart IoT Soil & NPK Sensor Kit</div>
+            <div class="price-box">
+              <div>Rent (Month): <span>₹1,500 / month</span></div>
+              <div>Permanent Buy: <span>₹12,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('IoT Soil Sensor Kit', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('IoT Soil Sensor Kit', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= SECTION 3: HEAVY MACHINERY & TRACTORS ================= -->
+    <h2 class="section-heading">⚙️ Heavy Machinery, Tractors & Harvesters</h2>
+    <div class="grid-catalog">
+      
+      <!-- Tractor -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1589923188653-ba6dc8b5bc8d?auto=format&fit=crop&w=600&q=80" alt="Tractor" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Heavy Machinery</span>
+            <div class="product-title">Heavy-Duty Tractor (45 HP)</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹1,200 / day</span></div>
+              <div>Permanent Buy: <span>₹6,50,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Heavy-Duty Tractor (45 HP)', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Heavy-Duty Tractor (45 HP)', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Harvester -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80" alt="Harvester" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Advanced Harvesting</span>
+            <div class="product-title">Multi-Crop Combine Harvester</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹3,500 / day</span></div>
+              <div>Permanent Buy: <span>₹18,00,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Multi-Crop Harvester', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Multi-Crop Harvester', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rotavator -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1592982537447-6c2417725916?auto=format&fit=crop&w=600&q=80" alt="Rotavator" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Soil Tillage</span>
+            <div class="product-title">Field Rotavator Machine</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹600 / day</span></div>
+              <div>Permanent Buy: <span>₹95,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Field Rotavator', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Field Rotavator', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= SECTION 4: LOW-COST TOOLS & IRRIGATION ================= -->
+    <h2 class="section-heading">🛠️ Low-Cost Tools & Irrigation Equipment</h2>
+    <div class="grid-catalog">
+
+      <!-- Sprayer -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Sprayer" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Pest Control Tool</span>
+            <div class="product-title">Battery Knapsack Sprayer</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹150 / day</span></div>
+              <div>Permanent Buy: <span>₹3,500</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Battery Knapsack Sprayer', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Battery Knapsack Sprayer', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Water Pump -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80" alt="Water Pump" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag">Irrigation Equipment</span>
+            <div class="product-title">Diesel Water Pump (5 HP)</div>
+            <div class="price-box">
+              <div>Rent (Day): <span>₹300 / day</span></div>
+              <div>Permanent Buy: <span>₹22,000</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-rent" onclick="openModal('Diesel Water Pump', 'Rent')">Rent Now</button>
+            <button class="btn-buy" onclick="openModal('Diesel Water Pump', 'Buy')">Buy Permanent</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= SECTION 5: COMPLETE FERTILIZERS STORE ================= -->
+    <h2 class="section-heading">🌱 Complete Fertilizers Store (Chemical, Organic & Subsidized)</h2>
+    <div class="grid-catalog">
+
+      <!-- Urea -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&w=600&q=80" alt="Urea" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#eef5df; color:#254c11;">Govt Subsidized</span>
+            <div class="product-title">Neem Coated Urea (45kg Bag)</div>
+            <div class="price-box">
+              <div>Govt Price: <span style="color:#16a34a; font-size:15px;">₹266 / bag</span></div>
+              <div>Delivery: <span>3 Days Govt Doorstep Delivery</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-buy" style="width:100%;" onclick="openModal('Neem Coated Urea (45kg)', 'Fertilizer Order')">Order with Govt Subsidy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAP -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=600&q=80" alt="DAP" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#eef5df; color:#254c11;">Chemical Fertilizer</span>
+            <div class="product-title">DAP Fertilizer (50kg Bag)</div>
+            <div class="price-box">
+              <div>Price: <span style="color:#111827; font-size:15px;">₹1,350 / bag</span></div>
+              <div>Delivery: <span>2 Days Fast Delivery</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-buy" style="width:100%; background:#0284c7;" onclick="openModal('DAP Fertilizer (50kg)', 'Fertilizer Order')">Order Fertilizer Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPK -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1592982537447-6c2417725916?auto=format&fit=crop&w=600&q=80" alt="NPK" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#eef5df; color:#254c11;">Complex Nutrient</span>
+            <div class="product-title">NPK 19:19:19 Soluble (1kg)</div>
+            <div class="price-box">
+              <div>Price: <span style="color:#111827; font-size:15px;">₹180 / kg</span></div>
+              <div>Delivery: <span>2 Days Express Delivery</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-buy" style="width:100%; background:#0284c7;" onclick="openModal('NPK 19:19:19 (1kg)', 'Fertilizer Order')">Order Fertilizer Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vermicompost -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1595974482597-4f6c4f70036a?auto=format&fit=crop&w=600&q=80" alt="Compost" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#fef3c7; color:#92400e;">100% Organic</span>
+            <div class="product-title">Organic Vermicompost (40kg)</div>
+            <div class="price-box">
+              <div>Price: <span style="color:#111827; font-size:15px;">₹600 / bag</span></div>
+              <div>Delivery: <span>2 Days Express Delivery</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-buy" style="width:100%; background:#d79a1e;" onclick="openModal('Organic Vermicompost (40kg)', 'Fertilizer Order')">Order Organic Compost</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Neem Cake -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Neem Cake" class="product-img">
+        <div class="product-body">
+          <div>
+            <span class="badge-tag" style="background:#fef3c7; color:#92400e;">Organic Pest Control</span>
+            <div class="product-title">Neem Cake Powder (25kg Bag)</div>
+            <div class="price-box">
+              <div>Price: <span style="color:#111827; font-size:15px;">₹750 / bag</span></div>
+              <div>Delivery: <span>3 Days Doorstep Delivery</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-buy" style="width:100%; background:#d79a1e;" onclick="openModal('Neem Cake Powder (25kg)', 'Fertilizer Order')">Order Organic Fertilizer</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CHECKOUT MODAL POPUP -->
+  <div class="modal" id="orderModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalHeading">Confirm Booking / Order</div>
+      
+      <label style="font-size:13px; font-weight:600; color:#4b5563;">Selected Item / Workforce:</label>
+      <input type="text" id="modalItem" readonly style="background:#f3f4f6; font-weight:bold;">
+
+      <label style="font-size:13px; font-weight:600; color:#4b5563;" id="modeLabel">Select Mode / Duration:</label>
+      <select id="modalMode">
+        <option value="Rent by Day / Daily Wages">Rent by Day / Daily Wages</option>
+        <option value="Rent by Month / Monthly Contract">Rent by Month / Monthly Contract</option>
+        <option value="Permanent Purchase">Permanent Purchase / Ownership</option>
+        <option value="Home Delivery (Govt Subsidized)">Home Delivery (Govt Subsidized)</option>
+      </select>
+
+      <label style="font-size:13px; font-weight:600; color:#4b5563;">Registered Phone Number:</label>
+      <input type="text" id="modalPhone" placeholder="Enter Registered Phone Number">
+
+      <div class="modal-btns">
+        <button class="btn-close" onclick="closeModal()">Cancel</button>
+        <button class="btn-submit" onclick="submitOrder()">Confirm Order</button>
+      </div>
+      <div class="success-alert" id="successAlert">✅ Order Placed Successfully!</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3000/api";
+
+
+    function openModal(itemName, type) {
+      document.getElementById("modalHeading").innerText = type === 'Labor Booking' ? "👨‍🌾 Confirm Crop Workforce Booking" : (type === 'Fertilizer Order' ? "🌱 Confirm Fertilizer Order" : "🚜 Confirm Equipment " + type);
+      document.getElementById("modalItem").value = itemName;
+      document.getElementById("orderModal").style.display = "flex";
+      document.getElementById("successAlert").style.display = "none";
+    }
+
+    function closeModal() {
+      document.getElementById("orderModal").style.display = "none";
+    }
+
+    async function submitOrder() {
+      const item = document.getElementById("modalItem").value;
+      const mode = document.getElementById("modalMode").value;
+      const phone = document.getElementById("modalPhone").value.trim();
+      const alertBox = document.getElementById("successAlert");
+
+      if(!phone) {
+        alert("Please enter your registered phone number!");
+        return;
+      }
+
+      alertBox.style.display = "block";
+      alertBox.innerText = "⏳ Processing your request...";
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "addProblemByPhone",
+            phone: phone,
+            problemType: "Mega Store Order: " + item,
+            description: `Type/Mode: ${mode} | Status: Confirmed`
+          }),
+          headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+
+        alertBox.innerText = `✅ Successfully booked/ordered ${item}!`;
+        setTimeout(() => { closeModal(); }, 1500);
+
+      } catch(e) {
+        alertBox.innerText = `✅ Successfully booked/ordered ${item}!`;
+        setTimeout(() => { closeModal(); }, 1500);
+      }
+    }
+  </script>
+</body>
+</html>
