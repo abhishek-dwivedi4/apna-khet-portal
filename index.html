@@ -1,601 +1,597 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Apna Khet - Smart Agriculture Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- TensorFlow.js & Teachable Machine CDN Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apna Khet - Smart Agriculture Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- TensorFlow.js & Teachable Machine CDN Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-  <style>
-    *{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
-    :root{
-      --green:#1f6b2c; --green-dark:#0f3f17; --green-light:#dcefcf;
-      --gold:#d79a1e; --text:#1f2937; --muted:#6b7280; --border:#dde5d8;
-      --bg:#f5f7f2; --shadow:0 10px 28px rgba(0,0,0,0.10);
-    }
-    body{ background:var(--bg); color:var(--text); }
-    .top-strip{ background:#ead8b8; height:22px; width:100%; }
-    
-    /* MENU FIX APPLIED HERE */
-    .navbar{ background:rgba(15,15,15,0.92); color:white; position:sticky; top:0; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.15); overflow-x: auto;}
-    .nav-inner{ max-width:1400px; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:20px; padding:14px 20px; white-space:nowrap; }
-    .brand{ display:flex; align-items:center; gap:14px; min-width:260px; }
-    .brand-logo{ width:64px; height:64px; border-radius:14px; overflow:hidden; background:#fff; flex-shrink:0; }
-    .brand-logo img{ width:100%; height:100%; object-fit:cover; }
-    .brand-text h1{ font-size:28px; line-height:1; font-weight:900; color:#fff; margin-bottom:6px; }
-    .brand-text p{ font-size:12px; color:rgba(255,255,255,0.75); }
-    .nav-links{ display:flex; align-items:center; gap:6px; }
-    .nav-links a{ color:#fff; text-decoration:none; font-size:14px; font-weight:600; padding:10px 14px; border-radius:8px; transition:0.2s; }
-    .nav-links a:hover{ background:rgba(255,255,255,0.08); }
-    
-    .hero{
-      min-height:480px;
-      background: linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.52)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80') center/cover;
-      display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 20px; color:white;
-    }
-    .hero h2{ font-size:48px; font-weight:900; margin-bottom:16px; }
-    .hero p{ font-size:18px; max-width:850px; margin:0 auto 20px; color:rgba(255,255,255,0.88); }
-    .hero button{ padding:14px 24px; border:none; background:var(--gold); color:#fff; font-weight:800; cursor:pointer; font-size:15px; border-radius:4px; }
-    .highlight-bar{ max-width:980px; margin:-28px auto 28px; background:var(--gold); color:white; padding:14px 26px; text-align:center; font-size:28px; font-weight:900; border-radius:0 0 20px 20px; box-shadow:var(--shadow); }
-    .container{ max-width:1400px; margin:auto; padding:0 18px 34px; }
-    .stats-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
-    .stat-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; }
-    .stat-head{ padding:14px; color:white; font-weight:800; text-align:center; text-transform:uppercase; font-size:14px; }
-    .orange{ background:#ef8f1d; } .green{ background:#13a34a; } .blue{ background:#173a8f; } .gray{ background:#707070; }
-    .stat-body{ padding:18px; font-size:14px; color:#374151; min-height:120px; }
-    .form-section{ margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    .form-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); }
-    .form-title{ background:#eef5df; color:#254c11; font-weight:800; font-size:20px; padding:14px 16px; border-bottom:1px solid #dae6c7; }
-    .form-body{ padding:18px; }
-    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .grid-1{ display:grid; grid-template-columns:1fr; gap:12px; }
-    input, select, textarea{ width:100%; padding:12px; border:1px solid #cfd6c7; background:#fff; font-size:14px; outline:none; }
-    textarea{ min-height:90px; resize:vertical; }
-    .upload-box{ border:2px dashed #22c55e; padding:14px; text-align:center; cursor:pointer; border-radius:6px; display:block; background:#fafcf8; }
-    .upload-box:hover{ background:#f0fff4; }
-    .upload-box input{ display:none; }
-    .submit-btn, .search-btn{ width:100%; margin-top:10px; padding:12px; background:var(--green); color:white; border:none; font-weight:800; cursor:pointer; font-size:15px; }
-    .submit-btn:hover, .search-btn:hover{ background:var(--green-dark); }
-    .msg{ margin-top:12px; font-size:14px; font-weight:700; color:#14532d; }
-    .search-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); margin-top:24px; }
-    .search-row{ display:grid; grid-template-columns:1fr auto; gap:12px; margin-bottom:16px; }
-    .search-result{ border:1px solid var(--border); background:#fafcf8; padding:16px; font-size:14px; line-height:1.7; }
-    .preview-img{ max-width:100%; max-height:220px; border-radius:8px; margin-top:10px; display:none; border:1px solid #cfd6c7; }
-    .footer{ margin-top:26px; text-align:center; color:#6b7280; font-size:13px; padding:20px 10px; }
-    @media (max-width:1100px){ .stats-row, .form-section{ grid-template-columns:1fr; } }
-    @media (max-width:700px){ .hero h2{ font-size:32px; } .grid-2, .search-row{ grid-template-columns:1fr; } }
-  </style>
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    :root{
+      --green:#1f6b2c; --green-dark:#0f3f17; --green-light:#dcefcf;
+      --gold:#d79a1e; --text:#1f2937; --muted:#6b7280; --border:#dde5d8;
+      --bg:#f5f7f2; --shadow:0 10px 28px rgba(0,0,0,0.10);
+    }
+    body{ background:var(--bg); color:var(--text); }
+    .top-strip{ background:#ead8b8; height:22px; width:100%; }
+    .navbar{ background:rgba(15,15,15,0.92); color:white; position:sticky; top:0; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .nav-inner{ max-width:1400px; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:20px; padding:14px 20px; flex-wrap:wrap; }
+    .brand{ display:flex; align-items:center; gap:14px; min-width:260px; }
+    .brand-logo{ width:64px; height:64px; border-radius:14px; overflow:hidden; background:#fff; flex-shrink:0; }
+    .brand-logo img{ width:100%; height:100%; object-fit:cover; }
+    .brand-text h1{ font-size:28px; line-height:1; font-weight:900; color:#fff; margin-bottom:6px; }
+    .brand-text p{ font-size:12px; color:rgba(255,255,255,0.75); }
+    .nav-links{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .nav-links a{ color:#fff; text-decoration:none; font-size:14px; font-weight:600; padding:10px 14px; border-radius:8px; transition:0.2s; }
+    .nav-links a:hover{ background:rgba(255,255,255,0.08); }
+    .hero{
+      min-height:480px;
+      background: linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.52)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80') center/cover;
+      display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 20px; color:white;
+    }
+    .hero h2{ font-size:48px; font-weight:900; margin-bottom:16px; }
+    .hero p{ font-size:18px; max-width:850px; margin:0 auto 20px; color:rgba(255,255,255,0.88); }
+    .hero button{ padding:14px 24px; border:none; background:var(--gold); color:#fff; font-weight:800; cursor:pointer; font-size:15px; border-radius:4px; }
+    .highlight-bar{ max-width:980px; margin:-28px auto 28px; background:var(--gold); color:white; padding:14px 26px; text-align:center; font-size:28px; font-weight:900; border-radius:0 0 20px 20px; box-shadow:var(--shadow); }
+    .container{ max-width:1400px; margin:auto; padding:0 18px 34px; }
+    .stats-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+    .stat-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; }
+    .stat-head{ padding:14px; color:white; font-weight:800; text-align:center; text-transform:uppercase; font-size:14px; }
+    .orange{ background:#ef8f1d; } .green{ background:#13a34a; } .blue{ background:#173a8f; } .gray{ background:#707070; }
+    .stat-body{ padding:18px; font-size:14px; color:#374151; min-height:120px; }
+    .form-section{ margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .form-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); }
+    .form-title{ background:#eef5df; color:#254c11; font-weight:800; font-size:20px; padding:14px 16px; border-bottom:1px solid #dae6c7; }
+    .form-body{ padding:18px; }
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .grid-1{ display:grid; grid-template-columns:1fr; gap:12px; }
+    input, select, textarea{ width:100%; padding:12px; border:1px solid #cfd6c7; background:#fff; font-size:14px; outline:none; }
+    textarea{ min-height:90px; resize:vertical; }
+    .upload-box{ border:2px dashed #22c55e; padding:14px; text-align:center; cursor:pointer; border-radius:6px; display:block; background:#fafcf8; }
+    .upload-box:hover{ background:#f0fff4; }
+    .upload-box input{ display:none; }
+    .submit-btn, .search-btn{ width:100%; margin-top:10px; padding:12px; background:var(--green); color:white; border:none; font-weight:800; cursor:pointer; font-size:15px; }
+    .submit-btn:hover, .search-btn:hover{ background:var(--green-dark); }
+    .msg{ margin-top:12px; font-size:14px; font-weight:700; color:#14532d; }
+    .search-card{ background:white; border:1px solid var(--border); box-shadow:var(--shadow); margin-top:24px; }
+    .search-row{ display:grid; grid-template-columns:1fr auto; gap:12px; margin-bottom:16px; }
+    .search-result{ border:1px solid var(--border); background:#fafcf8; padding:16px; font-size:14px; line-height:1.7; }
+    .preview-img{ max-width:100%; max-height:220px; border-radius:8px; margin-top:10px; display:none; border:1px solid #cfd6c7; }
+    .footer{ margin-top:26px; text-align:center; color:#6b7280; font-size:13px; padding:20px 10px; }
+    @media (max-width:1100px){ .stats-row, .form-section{ grid-template-columns:1fr; } }
+    @media (max-width:700px){ .hero h2{ font-size:32px; } .grid-2, .search-row{ grid-template-columns:1fr; } }
+  </style>
 </head>
 <body>
 
-  <div class="top-strip"></div>
-
-  <header class="navbar">
-    <div class="nav-inner">
-      <div class="brand">
-        <div class="brand-logo"><img src="logo pana khet.jpeg" alt="Logo"></div>
-        <div class="brand-text">
-          <h1>Apna Khet</h1>
-          <p>Apna Khet, Apni Pehchaan</p>
-        </div>
-      </div>
-      <nav class="nav-links">
-        <a href="#home">Home</a>
-        <a href="#weather">Weather</a>
-        <a href="#ai">AI Crop Detector</a>
-        <a href="#forms">Farmer Services</a>
-        <a href="equipment.html">🚜 Mega Marketplace</a>
-        <a href="farmer-login.html">Farmer Login</a>
-        <a href="admin.html">Admin Panel</a>
-      </nav>
-    </div>
-  </header>
-
-  <section class="hero" id="home">
-    <div>
-      <h2>Empowering Farmers With Smart Digital Support</h2>
-      <p>Register farmers, manage crop details, report problems, and detect diseases in one unified platform.</p>
-      <button onclick="document.getElementById('forms').scrollIntoView({behavior:'smooth'})">Get Started</button>
-    </div>
-  </section>
-
-  <div class="highlight-bar">APNA KHET ADVANTAGE</div>
-
-  <main class="container">
-
-    <!-- 🌤️ WEATHER WIDGET -->
-    <div class="search-card" id="weather" style="margin-bottom:28px;">
-      <div class="form-title" style="background:#e8f5e9; color:#1b5e20;">🌤️ Live Weather & Krishi Alert</div>
-      <div class="form-body">
-        <div class="search-row">
-          <input type="text" id="weatherCity" placeholder="Enter City / District (e.g. Lucknow, Gorakhpur)" value="Lucknow">
-          <button class="search-btn" style="margin-top:0;" onclick="getWeather()">Get Weather</button>
-        </div>
-        <div id="weatherResult" class="search-result" style="display:none; background:#f1f8e9;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-            <div>
-              <h3 id="cityName" style="color:#1b5e20; font-size:20px;">-</h3>
-              <p id="weatherDesc" style="font-size:15px; color:#374151;">-</p>
-            </div>
-            <div style="text-align:right;">
-              <div id="tempVal" style="font-size:32px; font-weight:900; color:#2e7d32;">--°C</div>
-              <p id="humidityVal" style="font-size:13px; color:#6b7280;">Wind: -- km/h</p>
-            </div>
-          </div>
-          <div id="farmingTip" style="margin-top:12px; padding:10px; background:#fff; border-left:4px solid #2e7d32; font-weight:600; color:#1b5e20;">
-            💡 <b>Farmer Advisory:</b> Loading advice...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 🌾 OVERVIEW -->
-    <section class="stats-row" id="overview">
-      <div class="stat-card"><div class="stat-head orange">Farmer Registration</div><div class="stat-body">Register farmers with name and simple custom Farmer ID format.</div></div>
-      <div class="stat-card"><div class="stat-head green">Crop Records</div><div class="stat-body">Store crop name, season, land area, and sowing date cleanly.</div></div>
-      <div class="stat-card"><div class="stat-head blue">Problem Tracking</div><div class="stat-body">Report pest, disease, and soil issues directly from the field.</div></div>
-      <div class="stat-card"><div class="stat-head gray">Admin Support</div><div class="stat-body">Review reports and manage resolution status via Admin Panel.</div></div>
-    </section>
-
-    <!-- 🧠 AI CROP DISEASE DETECTION -->
-    <div class="form-card" id="ai" style="margin-bottom:28px;">
-      <div class="form-title">🧠 AI Crop Disease Detector (Teachable Machine)</div>
-      <div class="form-body">
-        <p>Upload a photo or capture live camera image to detect crop disease instantly.</p>
-        <div class="grid-1" style="margin-top:12px;">
-          <input type="text" id="aiPhone" placeholder="Registered Phone Number">
-
-          <label class="upload-box">
-            📁 <span id="uploadStatusText">Upload Crop Image</span>
-            <input type="file" id="imageUpload" accept="image/*">
-          </label>
-
-          <img id="imgPreview" class="preview-img" alt="Crop Preview">
-
-          <button class="submit-btn" style="background:#1565c0;" onclick="openCamera()">📸 Open Camera</button>
-          <video id="camera" autoplay style="width:100%; display:none; border-radius:8px; margin-top:8px;"></video>
-          <button id="captureBtn" class="submit-btn" style="display:none; background:#d79a1e;" onclick="capturePhoto()">Capture Photo</button>
-          <canvas id="canvas" style="display:none;"></canvas>
-
-          <button class="submit-btn" onclick="predict()">🔍 Analyze Crop</button>
-          <div id="aiResult" class="msg"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 📝 FARMER SERVICES & FORMS -->
-    <section class="form-section" id="forms">
-      <div class="form-card">
-        <div class="form-title">Farmer Registration</div>
-        <div class="form-body">
-          <div class="grid-2">
-            <input type="text" id="name" placeholder="Farmer Name">
-            <input type="text" id="phone" placeholder="Phone Number">
-            <input type="text" id="village" placeholder="Village">
-            <input type="text" id="district" placeholder="District">
-          </div>
-          <div class="grid-1" style="margin-top:12px;">
-            <input type="text" id="state" placeholder="State">
-          </div>
-          <button class="submit-btn" onclick="registerFarmer()">Register Farmer</button>
-          <div id="farmerMsg" class="msg"></div>
-        </div>
-      </div>
-
-      <div class="form-card">
-        <div class="form-title">Add Crop Details</div>
-        <div class="form-body">
-          <div class="grid-2">
-            <input type="text" id="cropPhone" placeholder="Registered Phone Number">
-            <input type="text" id="cropName" placeholder="Crop Name">
-            <input type="text" id="landArea" placeholder="Land Area (in acres)">
-            <select id="season">
-              <option value="">Select Season</option>
-              <option>Kharif</option><option>Rabi</option><option>Zaid</option>
-            </select>
-          </div>
-          <div class="grid-1" style="margin-top:12px;">
-            <input type="date" id="sowingDate">
-          </div>
-          <button class="submit-btn" onclick="addCrop()">Save Crop Details</button>
-          <div id="cropMsg" class="msg"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="form-section" style="margin-top:22px;">
-      <div class="form-card">
-        <div class="form-title">Report Farming Problem</div>
-        <div class="form-body">
-          <div class="grid-2">
-            <input type="text" id="problemPhone" placeholder="Registered Phone Number">
-            <select id="problemType">
-              <option value="">Select Problem Type</option>
-              <option>Pest Attack</option><option>Leaf Disease</option>
-              <option>Low Growth</option><option>Water Issue</option><option>Soil Issue</option>
-            </select>
-          </div>
-          <div class="grid-1" style="margin-top:12px;">
-            <textarea id="description" placeholder="Describe your farming problem"></textarea>
-          </div>
-          <button class="submit-btn" onclick="addProblem()">Submit Problem</button>
-          <div id="problemMsg" class="msg"></div>
-        </div>
-      </div>
-
-      <div class="form-card">
-        <div class="form-title">Search Farmer Details</div>
-        <div class="form-body">
-          <div class="search-row">
-            <input type="text" id="searchPhone" placeholder="Enter Registered Phone Number">
-            <button class="search-btn" style="margin-top:0;" onclick="searchFarmer()">Search</button>
-          </div>
-          <div id="searchResult" class="search-result"><p>No search result yet.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <div class="footer">© Apna Khet — Smart Agriculture Support Portal</div>
-  </main>
-
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxZQcci-TwVfIbRd-Uqt6D5XhQvNTWExRpbQwWfScRUd338QRsV0O1w0bfIgLJthP8w/exec";
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/gbap3jGZX/";
-
-    let model;
-
-    // Load AI Model
-    async function loadModel() {
-      try {
-        if (typeof window.tmImage !== 'undefined') {
-          const modelURL = MODEL_URL + "model.json";
-          const metadataURL = MODEL_URL + "metadata.json";
-          model = await window.tmImage.load(modelURL, metadataURL);
-          console.log("✅ AI Model Loaded Successfully!");
-        }
-      } catch (e) {
-        console.error("❌ Model loading error:", e);
-      }
-    }
-
-    // Image Upload Change Handler
-    document.getElementById("imageUpload").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      const preview = document.getElementById("imgPreview");
-      const statusText = document.getElementById("uploadStatusText");
-
-      if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-        statusText.innerText = "Selected: " + file.name;
-        document.getElementById("camera").style.display = "none";
-        document.getElementById("captureBtn").style.display = "none";
-      }
-    });
-
-    // SMART DISEASE SOLUTION MATCHER
-    function getSolution(diseaseName) {
-      const d = String(diseaseName || "").toLowerCase().trim();
-
-      // A. HEALTHY LEAF (SAHI FASOL - KOI DAWAI NAHI CHAHIYE)
-      if (d.includes("healthy") || d.includes("fresh") || d.includes("normal") || d.includes("swasth") || d.includes("clean")) {
-        return {
-          status: "Swasth Fasol (Healthy Leaf)",
-          isHealthy: true,
-          organic: "🌱 <b>Jaivik Advice:</b> Khet swasth hai! Niyamit compost (khaad) daalein aur samay par sinchai karein.",
-          chemical: "❌ <b>Rasayanik Advice:</b> Aapki fasol swasth hai, kisi rasayanik dawai ya keetnashak ki zaroorat NAHI hai."
-        };
-      }
-
-      // B. LEAF SPOT / BACTERIAL SPOT / ALTERNARIA
-      if (d.includes("spot") || d.includes("alternaria") || d.includes("cercospora") || d.includes("dhabba")) {
-        return {
-          status: "Patte par Dhabbe (Leaf Spot)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Neem oil (5ml per liter paani) + thoda liquid soap ghol kar spray karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) ya Copper Oxychloride 50% WP (2.5g/L) spray karein."
-        };
-      }
-
-      // C. BLIGHT (EARLY BLIGHT / LATE BLIGHT / LEAF BLIGHT)
-      if (d.includes("blight") || d.includes("jhursa") || d.includes("scorching") || d.includes("scab")) {
-        return {
-          status: "Jhursa Rog (Blight Disease)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Trichoderma viride (5g/L paani) ka ghol banakar jado aur patto par chhirkav karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Ridomil Gold (Metalaxyl + Mancozeb 2g/L) ya Azoxystrobin (1ml/L) spray karein."
-        };
-      }
-
-      // D. RUST (BROWN RUST / YELLOW RUST / BLACK RUST)
-      if (d.includes("rust") || d.includes("gehua") || d.includes("ratuwa") || d.includes("gerui")) {
-        return {
-          status: "Gerui / Ratuwa Rog (Rust Disease)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Baking soda (5g/L paani) + Neem oil solution patto par spray karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Propiconazole 25% EC (Tilt 1ml/L paani) ghol kar spray karein."
-        };
-      }
-
-      // E. POWDERY MILDEW / DOWNY MILDEW
-      if (d.includes("mildew") || d.includes("powdery") || d.includes("downy") || d.includes("safed")) {
-        return {
-          status: "Safed Fafundi (Mildew Disease)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Khatai wali dahi/chhaachh (100ml/L paani) ghol kar 5 din ke antar par spray karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Water Soluble Sulfur 80% WP (3g/L) ya Hexaconazole 5% EC (2ml/L) spray karein."
-        };
-      }
-
-      // F. MOSAIC VIRUS / LEAF CURL / YELLOW MOSAIC
-      if (d.includes("mosaic") || d.includes("curl") || d.includes("virus") || d.includes("yellow") || d.includes("pila")) {
-        return {
-          status: "Mosaic Virus / Patti Modak Rog",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Yellow Sticky Traps khet mein lagayein aur Neem oil 10000 ppm spray karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Imidacloprid 17.8% SL (0.5ml/L) ya Thiamethoxam 25% WG (0.5g/L) spray karein."
-        };
-      }
-
-      // G. PEST / CATERPILLAR / BORER / APHID / KEEDA
-      if (d.includes("pest") || d.includes("aphid") || d.includes("thrips") || d.includes("borer") || d.includes("worm") || d.includes("keeda")) {
-        return {
-          status: "Keet Aakraman (Pest Attack)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Lahsun-Mirch kadha + Neem oil spray karein aur Pheromone traps lagayein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Emamectin Benzoate 5% SG (0.5g/L) ya Chlorantraniliprole 18.5% SC (0.4ml/L) spray karein."
-        };
-      }
-
-      // H. WILT / ROT / ROOT ROT
-      if (d.includes("wilt") || d.includes("rot") || d.includes("damping") || d.includes("ukhata")) {
-        return {
-          status: "Ukhata / Jad Galan (Wilt & Rot)",
-          isHealthy: false,
-          organic: "🌿 <b>Jaivik Upay:</b> Pseudomonas fluorescens (10g/L) se jado ki drenching karein.",
-          chemical: "🧪 <b>Rasayanik Dawai:</b> Carbendazim 50% WP (2g/L paani) se jado ke paas drenching karein."
-        };
-      }
-
-      // DEFAULT FALLBACK
-      return {
-        status: "Fasal Infection",
-        isHealthy: false,
-        organic: "🌿 <b>Jaivik Upay:</b> Neem oil solution (5ml/L paani) spray karein.",
-        chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) spray karein aur Krishi Kendra se salah lein."
-      };
-    }
-
-    // Camera Operations
-    async function openCamera() {
-      const video = document.getElementById("camera");
-      const btn = document.getElementById("captureBtn");
-      const preview = document.getElementById("imgPreview");
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        video.style.display = "block";
-        btn.style.display = "block";
-        preview.style.display = "none";
-      } catch (err) {
-        alert("Camera access failed: " + err.message);
-      }
-    }
-
-    function capturePhoto() {
-      const video = document.getElementById("camera");
-      const canvas = document.getElementById("canvas");
-      const preview = document.getElementById("imgPreview");
-
-      canvas.width = video.videoWidth || 300;
-      canvas.height = video.videoHeight || 300;
-      canvas.getContext("2d").drawImage(video, 0, 0);
-
-      preview.src = canvas.toDataURL("image/png");
-      preview.style.display = "block";
-      video.style.display = "none";
-      document.getElementById("captureBtn").style.display = "none";
-    }
-
-    // ACCURATE PREDICT FUNCTION
-    async function predict() {
-      const phone = document.getElementById("aiPhone").value.trim();
-      const fileInput = document.getElementById("imageUpload");
-      const preview = document.getElementById("imgPreview");
-      const canvas = document.getElementById("canvas");
-      const resultBox = document.getElementById("aiResult");
-
-      if (!phone) { alert("Kripya registered phone number darj karein!"); return; }
-      if (!model) { alert("AI Model load ho raha hai. 2 second baad try karein."); return; }
-
-      resultBox.innerHTML = "⏳ AI photo ki jaanch kar raha hai...";
-
-      const hiddenCanvas = document.createElement("canvas");
-      hiddenCanvas.width = 224;
-      hiddenCanvas.height = 224;
-      const ctx = hiddenCanvas.getContext("2d");
-
-      let sourceImg = new Image();
-
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        sourceImg.src = URL.createObjectURL(fileInput.files[0]);
-        await new Promise((res) => { sourceImg.onload = res; });
-      } else if (preview && preview.style.display !== "none" && preview.src) {
-        sourceImg.src = preview.src;
-        await new Promise((res) => { sourceImg.onload = res; });
-      } else if (canvas && canvas.width > 0) {
-        sourceImg.src = canvas.toDataURL("image/png");
-        await new Promise((res) => { sourceImg.onload = res; });
-      } else {
-        alert("Photo upload karein ya camera se khinchein!");
-        return;
-      }
-
-      ctx.drawImage(sourceImg, 0, 0, 224, 224);
-
-      try {
-        const prediction = await model.predict(hiddenCanvas);
-        prediction.sort((a, b) => b.probability - a.probability);
-
-        const bestMatch = prediction[0];
-        const diseaseName = bestMatch.className;
-        const confidence = (bestMatch.probability * 100).toFixed(1);
-        const sol = getSolution(diseaseName);
-
-        if (sol.isHealthy) {
-          resultBox.innerHTML = `
-            <div style="background:#f0fff4; border:2px solid #22c55e; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
-              <h3 style="color:#15803d; margin-bottom:4px;">🌱 Result: ${diseaseName} (${confidence}%)</h3>
-              <p style="font-size:14px; color:#166534; font-weight:700; margin-bottom:8px;">✅ Aapki fasol ekdum swasth hai!</p>
-              <hr style="margin:8px 0; border:0; border-top:1px solid #bbf7d0;">
-              <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.organic}</p>
-              <br>
-              <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.chemical}</p>
-            </div>
-          `;
-        } else {
-          resultBox.innerHTML = `
-            <div style="background:#fff5f5; border:2px solid #ef4444; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
-              <h3 style="color:#991b1b; margin-bottom:4px;">🚨 Disease Detected: ${diseaseName}</h3>
-              <p style="font-size:13px; color:#991b1b; font-weight:700; margin-bottom:8px;">📌 Category: ${sol.status} (Confidence: ${confidence}%)</p>
-              <hr style="margin:8px 0; border:0; border-top:1px solid #fca5a5;">
-              <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.organic}</p>
-              <br>
-              <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.chemical}</p>
-            </div>
-          `;
-
-          postData({
-            action: "addProblemByPhone",
-            phone: phone,
-            problemType: "AI Detected: " + diseaseName,
-            description: `Confidence: ${confidence}% | ${sol.status}`
-          });
-        }
-
-      } catch (err) {
-        console.error("AI Error:", err);
-        resultBox.innerHTML = "❌ AI Detection failed. Clear photo upload karein.";
-      }
-    }
-
-    // Weather API
-    async function getWeather() {
-      const city = document.getElementById("weatherCity").value.trim();
-      const resultBox = document.getElementById("weatherResult");
-      const tipBox = document.getElementById("farmingTip");
-
-      if (!city) return alert("Enter city or district name");
-
-      try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
-        const geoData = await geoRes.json();
-        if (!geoData.results || !geoData.results.length) return alert("City not found!");
-
-        const { latitude: lat, longitude: lon, name } = geoData.results[0];
-        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-        const weatherData = await weatherRes.json();
-
-        const { temperature: temp, windspeed: wind, weathercode: code } = weatherData.current_weather;
-
-        let desc = "Clear Sky", tip = "Good condition for sowing and spraying pesticides.";
-        if (code >= 1 && code <= 3) { desc = "Partly Cloudy"; tip = "Ideal weather for field inspection."; }
-        else if (code >= 51 && code <= 99) { desc = "Rainy / Thunderstorm"; tip = "⚠️ Protect crops! Avoid irrigation today."; }
-
-        document.getElementById("cityName").innerText = name;
-        document.getElementById("weatherDesc").innerText = `🌤️ ${desc}`;
-        document.getElementById("tempVal").innerText = `${temp}°C`;
-        document.getElementById("humidityVal").innerText = `Wind: ${wind} km/h`;
-        tipBox.innerHTML = `💡 <b>Farmer Advisory:</b> ${tip}`;
-        resultBox.style.display = "block";
-      } catch (err) { console.error("Weather error:", err); }
-    }
-
-    // API Helpers
-    async function getData(url) { return (await fetch(url)).json(); }
-    async function postData(payload) {
-      return (await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "text/plain;charset=utf-8" }
-      })).json();
-    }
-
-    // Form Submissions
-    async function registerFarmer() {
-      const payload = {
-        action: "addFarmer",
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        village: document.getElementById("village").value,
-        district: document.getElementById("district").value,
-        state: document.getElementById("state").value
-      };
-      const res = await postData(payload);
-      document.getElementById("farmerMsg").innerHTML = res.success ? `✅ ${res.message}<br>Farmer ID: <b>${res.farmerId}</b>` : `❌ ${res.message}`;
-    }
-
-    async function addCrop() {
-      const payload = {
-        action: "addCropByPhone",
-        phone: document.getElementById("cropPhone").value,
-        cropName: document.getElementById("cropName").value,
-        landArea: document.getElementById("landArea").value,
-        season: document.getElementById("season").value,
-        sowingDate: document.getElementById("sowingDate").value
-      };
-      const res = await postData(payload);
-      document.getElementById("cropMsg").innerHTML = res.success ? `✅ ${res.message} for <b>${res.farmerName || ""}</b>` : `❌ ${res.message}`;
-    }
-
-    async function addProblem() {
-      const payload = {
-        action: "addProblemByPhone",
-        phone: document.getElementById("problemPhone").value,
-        problemType: document.getElementById("problemType").value,
-        description: document.getElementById("description").value
-      };
-      const res = await postData(payload);
-      document.getElementById("problemMsg").innerHTML = res.success ? `✅ ${res.message} for <b>${res.farmerName || ""}</b>` : `❌ ${res.message}`;
-    }
-
-    async function searchFarmer() {
-      const phone = document.getElementById("searchPhone").value.trim();
-      const res = await getData(`${API_URL}?action=searchFarmerByPhone&phone=${encodeURIComponent(phone)}`);
-      const box = document.getElementById("searchResult");
-
-      if (!res.success) { box.innerHTML = `<p>❌ ${res.message}</p>`; return; }
-
-      const crops = Array.isArray(res.crops) ? res.crops : [];
-      const problems = Array.isArray(res.problems) ? res.problems : [];
-
-      box.innerHTML = `
-        <h4>Farmer Details</h4>
-        <p><b>Name:</b> ${res.farmer.name || ""}</p>
-        <p><b>Farmer ID:</b> ${res.farmer.farmerId || ""}</p>
-        <p><b>Phone:</b> ${res.farmer.phone || ""}</p>
-        <p><b>Village:</b> ${res.farmer.village || ""}</p>
-        <p><b>District:</b> ${res.farmer.district || ""}</p>
-        <p><b>State:</b> ${res.farmer.state || ""}</p>
-        <h4 style="margin-top:14px;">Crop Records</h4>
-        ${crops.length ? `<ul>${crops.map(i => `<li>${i.cropName || ""} - ${i.landArea || ""} acres - ${i.season || ""}</li>`).join("")}</ul>` : `<p>No crop records.</p>`}
-        <h4 style="margin-top:14px;">Problem Reports</h4>
-        ${problems.length ? `<ul>${problems.map(i => `<li>${i.problemType || ""} - ${i.description || ""} - <b>${i.status || ""}</b></li>`).join("")}</ul>` : `<p>No problem reports.</p>`}
-      `;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      loadModel();
-      getWeather();
-    });
-  </script>
+  <div class="top-strip"></div>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-logo"><img src="logo pana khet.jpeg" alt="Logo"></div>
+        <div class="brand-text">
+          <h1>Apna Khet</h1>
+          <p>Apna Khet, Apni Pehchaan</p>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#weather">Weather</a>
+        <a href="#ai">AI Crop Detector</a>
+        <a href="#forms">Farmer Services</a>
+        <a href="farmer-login.html">Farmer Login</a>
+        <a href="admin.html">Admin Panel</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero" id="home">
+    <div>
+      <h2>Empowering Farmers With Smart Digital Support</h2>
+      <p>Register farmers, manage crop details, report problems, and detect diseases in one unified platform.</p>
+      <button onclick="document.getElementById('forms').scrollIntoView({behavior:'smooth'})">Get Started</button>
+    </div>
+  </section>
+
+  <div class="highlight-bar">APNA KHET ADVANTAGE</div>
+
+  <main class="container">
+
+    <!-- 🌤️ WEATHER WIDGET -->
+    <div class="search-card" id="weather" style="margin-bottom:28px;">
+      <div class="form-title" style="background:#e8f5e9; color:#1b5e20;">🌤️ Live Weather & Krishi Alert</div>
+      <div class="form-body">
+        <div class="search-row">
+          <input type="text" id="weatherCity" placeholder="Enter City / District (e.g. Lucknow, Gorakhpur)" value="Lucknow">
+          <button class="search-btn" style="margin-top:0;" onclick="getWeather()">Get Weather</button>
+        </div>
+        <div id="weatherResult" class="search-result" style="display:none; background:#f1f8e9;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+            <div>
+              <h3 id="cityName" style="color:#1b5e20; font-size:20px;">-</h3>
+              <p id="weatherDesc" style="font-size:15px; color:#374151;">-</p>
+            </div>
+            <div style="text-align:right;">
+              <div id="tempVal" style="font-size:32px; font-weight:900; color:#2e7d32;">--°C</div>
+              <p id="humidityVal" style="font-size:13px; color:#6b7280;">Wind: -- km/h</p>
+            </div>
+          </div>
+          <div id="farmingTip" style="margin-top:12px; padding:10px; background:#fff; border-left:4px solid #2e7d32; font-weight:600; color:#1b5e20;">
+            💡 <b>Farmer Advisory:</b> Loading advice...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌾 OVERVIEW -->
+    <section class="stats-row" id="overview">
+      <div class="stat-card"><div class="stat-head orange">Farmer Registration</div><div class="stat-body">Register farmers with name and simple custom Farmer ID format.</div></div>
+      <div class="stat-card"><div class="stat-head green">Crop Records</div><div class="stat-body">Store crop name, season, land area, and sowing date cleanly.</div></div>
+      <div class="stat-card"><div class="stat-head blue">Problem Tracking</div><div class="stat-body">Report pest, disease, and soil issues directly from the field.</div></div>
+      <div class="stat-card"><div class="stat-head gray">Admin Support</div><div class="stat-body">Review reports and manage resolution status via Admin Panel.</div></div>
+    </section>
+
+    <!-- 🧠 AI CROP DISEASE DETECTION -->
+    <div class="form-card" id="ai" style="margin-bottom:28px;">
+      <div class="form-title">🧠 AI Crop Disease Detector (Teachable Machine)</div>
+      <div class="form-body">
+        <p>Upload a photo or capture live camera image to detect crop disease instantly.</p>
+        <div class="grid-1" style="margin-top:12px;">
+          <input type="text" id="aiPhone" placeholder="Registered Phone Number">
+
+          <label class="upload-box">
+            📁 <span id="uploadStatusText">Upload Crop Image</span>
+            <input type="file" id="imageUpload" accept="image/*">
+          </label>
+
+          <img id="imgPreview" class="preview-img" alt="Crop Preview">
+
+          <button class="submit-btn" style="background:#1565c0;" onclick="openCamera()">📸 Open Camera</button>
+          <video id="camera" autoplay style="width:100%; display:none; border-radius:8px; margin-top:8px;"></video>
+          <button id="captureBtn" class="submit-btn" style="display:none; background:#d79a1e;" onclick="capturePhoto()">Capture Photo</button>
+          <canvas id="canvas" style="display:none;"></canvas>
+
+          <button class="submit-btn" onclick="predict()">🔍 Analyze Crop</button>
+          <div id="aiResult" class="msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📝 FARMER SERVICES & FORMS -->
+    <section class="form-section" id="forms">
+      <div class="form-card">
+        <div class="form-title">Farmer Registration</div>
+        <div class="form-body">
+          <div class="grid-2">
+            <input type="text" id="name" placeholder="Farmer Name">
+            <input type="text" id="phone" placeholder="Phone Number">
+            <input type="text" id="village" placeholder="Village">
+            <input type="text" id="district" placeholder="District">
+          </div>
+          <div class="grid-1" style="margin-top:12px;">
+            <input type="text" id="state" placeholder="State">
+          </div>
+          <button class="submit-btn" onclick="registerFarmer()">Register Farmer</button>
+          <div id="farmerMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Add Crop Details</div>
+        <div class="form-body">
+          <div class="grid-2">
+            <input type="text" id="cropPhone" placeholder="Registered Phone Number">
+            <input type="text" id="cropName" placeholder="Crop Name">
+            <input type="text" id="landArea" placeholder="Land Area (in acres)">
+            <select id="season">
+              <option value="">Select Season</option>
+              <option>Kharif</option><option>Rabi</option><option>Zaid</option>
+            </select>
+          </div>
+          <div class="grid-1" style="margin-top:12px;">
+            <input type="date" id="sowingDate">
+          </div>
+          <button class="submit-btn" onclick="addCrop()">Save Crop Details</button>
+          <div id="cropMsg" class="msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section" style="margin-top:22px;">
+      <div class="form-card">
+        <div class="form-title">Report Farming Problem</div>
+        <div class="form-body">
+          <div class="grid-2">
+            <input type="text" id="problemPhone" placeholder="Registered Phone Number">
+            <select id="problemType">
+              <option value="">Select Problem Type</option>
+              <option>Pest Attack</option><option>Leaf Disease</option>
+              <option>Low Growth</option><option>Water Issue</option><option>Soil Issue</option>
+            </select>
+          </div>
+          <div class="grid-1" style="margin-top:12px;">
+            <textarea id="description" placeholder="Describe your farming problem"></textarea>
+          </div>
+          <button class="submit-btn" onclick="addProblem()">Submit Problem</button>
+          <div id="problemMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-title">Search Farmer Details</div>
+        <div class="form-body">
+          <div class="search-row">
+            <input type="text" id="searchPhone" placeholder="Enter Registered Phone Number">
+            <button class="search-btn" style="margin-top:0;" onclick="searchFarmer()">Search</button>
+          </div>
+          <div id="searchResult" class="search-result"><p>No search result yet.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">© Apna Khet — Smart Agriculture Support Portal</div>
+  </main>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxZQcci-TwVfIbRd-Uqt6D5XhQvNTWExRpbQwWfScRUd338QRsV0O1w0bfIgLJthP8w/exec";
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/gbap3jGZX/";
+
+    let model;
+
+    // Load AI Model
+    async function loadModel() {
+      try {
+        if (typeof window.tmImage !== 'undefined') {
+          const modelURL = MODEL_URL + "model.json";
+          const metadataURL = MODEL_URL + "metadata.json";
+          model = await window.tmImage.load(modelURL, metadataURL);
+          console.log("✅ AI Model Loaded Successfully!");
+        }
+      } catch (e) {
+        console.error("❌ Model loading error:", e);
+      }
+    }
+
+    // Image Upload Change Handler
+    document.getElementById("imageUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const preview = document.getElementById("imgPreview");
+      const statusText = document.getElementById("uploadStatusText");
+
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+        statusText.innerText = "Selected: " + file.name;
+        document.getElementById("camera").style.display = "none";
+        document.getElementById("captureBtn").style.display = "none";
+      }
+    });
+
+    // SMART DISEASE SOLUTION MATCHER
+    function getSolution(diseaseName) {
+      const d = String(diseaseName || "").toLowerCase().trim();
+
+      // A. HEALTHY LEAF (SAHI FASOL - KOI DAWAI NAHI CHAHIYE)
+      if (d.includes("healthy") || d.includes("fresh") || d.includes("normal") || d.includes("swasth") || d.includes("clean")) {
+        return {
+          status: "Swasth Fasol (Healthy Leaf)",
+          isHealthy: true,
+          organic: "🌱 <b>Jaivik Advice:</b> Khet swasth hai! Niyamit compost (khaad) daalein aur samay par sinchai karein.",
+          chemical: "❌ <b>Rasayanik Advice:</b> Aapki fasol swasth hai, kisi rasayanik dawai ya keetnashak ki zaroorat NAHI hai."
+        };
+      }
+
+      // B. LEAF SPOT / BACTERIAL SPOT / ALTERNARIA
+      if (d.includes("spot") || d.includes("alternaria") || d.includes("cercospora") || d.includes("dhabba")) {
+        return {
+          status: "Patte par Dhabbe (Leaf Spot)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Neem oil (5ml per liter paani) + thoda liquid soap ghol kar spray karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) ya Copper Oxychloride 50% WP (2.5g/L) spray karein."
+        };
+      }
+
+      // C. BLIGHT (EARLY BLIGHT / LATE BLIGHT / LEAF BLIGHT)
+      if (d.includes("blight") || d.includes("jhursa") || d.includes("scorching") || d.includes("scab")) {
+        return {
+          status: "Jhursa Rog (Blight Disease)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Trichoderma viride (5g/L paani) ka ghol banakar jado aur patto par chhirkav karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Ridomil Gold (Metalaxyl + Mancozeb 2g/L) ya Azoxystrobin (1ml/L) spray karein."
+        };
+      }
+
+      // D. RUST (BROWN RUST / YELLOW RUST / BLACK RUST)
+      if (d.includes("rust") || d.includes("gehua") || d.includes("ratuwa") || d.includes("gerui")) {
+        return {
+          status: "Gerui / Ratuwa Rog (Rust Disease)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Baking soda (5g/L paani) + Neem oil solution patto par spray karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Propiconazole 25% EC (Tilt 1ml/L paani) ghol kar spray karein."
+        };
+      }
+
+      // E. POWDERY MILDEW / DOWNY MILDEW
+      if (d.includes("mildew") || d.includes("powdery") || d.includes("downy") || d.includes("safed")) {
+        return {
+          status: "Safed Fafundi (Mildew Disease)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Khatai wali dahi/chhaachh (100ml/L paani) ghol kar 5 din ke antar par spray karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Water Soluble Sulfur 80% WP (3g/L) ya Hexaconazole 5% EC (2ml/L) spray karein."
+        };
+      }
+
+      // F. MOSAIC VIRUS / LEAF CURL / YELLOW MOSAIC
+      if (d.includes("mosaic") || d.includes("curl") || d.includes("virus") || d.includes("yellow") || d.includes("pila")) {
+        return {
+          status: "Mosaic Virus / Patti Modak Rog",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Yellow Sticky Traps khet mein lagayein aur Neem oil 10000 ppm spray karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Imidacloprid 17.8% SL (0.5ml/L) ya Thiamethoxam 25% WG (0.5g/L) spray karein."
+        };
+      }
+
+      // G. PEST / CATERPILLAR / BORER / APHID / KEEDA
+      if (d.includes("pest") || d.includes("aphid") || d.includes("thrips") || d.includes("borer") || d.includes("worm") || d.includes("keeda")) {
+        return {
+          status: "Keet Aakraman (Pest Attack)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Lahsun-Mirch kadha + Neem oil spray karein aur Pheromone traps lagayein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Emamectin Benzoate 5% SG (0.5g/L) ya Chlorantraniliprole 18.5% SC (0.4ml/L) spray karein."
+        };
+      }
+
+      // H. WILT / ROT / ROOT ROT
+      if (d.includes("wilt") || d.includes("rot") || d.includes("damping") || d.includes("ukhata")) {
+        return {
+          status: "Ukhata / Jad Galan (Wilt & Rot)",
+          isHealthy: false,
+          organic: "🌿 <b>Jaivik Upay:</b> Pseudomonas fluorescens (10g/L) se jado ki drenching karein.",
+          chemical: "🧪 <b>Rasayanik Dawai:</b> Carbendazim 50% WP (2g/L paani) se jado ke paas drenching karein."
+        };
+      }
+
+      // DEFAULT FALLBACK
+      return {
+        status: "Fasal Infection",
+        isHealthy: false,
+        organic: "🌿 <b>Jaivik Upay:</b> Neem oil solution (5ml/L paani) spray karein.",
+        chemical: "🧪 <b>Rasayanik Dawai:</b> Mancozeb 75% WP (2g/L paani) spray karein aur Krishi Kendra se salah lein."
+      };
+    }
+
+    // Camera Operations
+    async function openCamera() {
+      const video = document.getElementById("camera");
+      const btn = document.getElementById("captureBtn");
+      const preview = document.getElementById("imgPreview");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.style.display = "block";
+        btn.style.display = "block";
+        preview.style.display = "none";
+      } catch (err) {
+        alert("Camera access failed: " + err.message);
+      }
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById("camera");
+      const canvas = document.getElementById("canvas");
+      const preview = document.getElementById("imgPreview");
+
+      canvas.width = video.videoWidth || 300;
+      canvas.height = video.videoHeight || 300;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+
+      preview.src = canvas.toDataURL("image/png");
+      preview.style.display = "block";
+      video.style.display = "none";
+      document.getElementById("captureBtn").style.display = "none";
+    }
+
+    // ACCURATE PREDICT FUNCTION
+    async function predict() {
+      const phone = document.getElementById("aiPhone").value.trim();
+      const fileInput = document.getElementById("imageUpload");
+      const preview = document.getElementById("imgPreview");
+      const canvas = document.getElementById("canvas");
+      const resultBox = document.getElementById("aiResult");
+
+      if (!phone) { alert("Kripya registered phone number darj karein!"); return; }
+      if (!model) { alert("AI Model load ho raha hai. 2 second baad try karein."); return; }
+
+      resultBox.innerHTML = "⏳ AI photo ki jaanch kar raha hai...";
+
+      const hiddenCanvas = document.createElement("canvas");
+      hiddenCanvas.width = 224;
+      hiddenCanvas.height = 224;
+      const ctx = hiddenCanvas.getContext("2d");
+
+      let sourceImg = new Image();
+
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        sourceImg.src = URL.createObjectURL(fileInput.files[0]);
+        await new Promise((res) => { sourceImg.onload = res; });
+      } else if (preview && preview.style.display !== "none" && preview.src) {
+        sourceImg.src = preview.src;
+        await new Promise((res) => { sourceImg.onload = res; });
+      } else if (canvas && canvas.width > 0) {
+        sourceImg.src = canvas.toDataURL("image/png");
+        await new Promise((res) => { sourceImg.onload = res; });
+      } else {
+        alert("Photo upload karein ya camera se khinchein!");
+        return;
+      }
+
+      ctx.drawImage(sourceImg, 0, 0, 224, 224);
+
+      try {
+        const prediction = await model.predict(hiddenCanvas);
+        prediction.sort((a, b) => b.probability - a.probability);
+
+        const bestMatch = prediction[0];
+        const diseaseName = bestMatch.className;
+        const confidence = (bestMatch.probability * 100).toFixed(1);
+        const sol = getSolution(diseaseName);
+
+        if (sol.isHealthy) {
+          resultBox.innerHTML = `
+            <div style="background:#f0fff4; border:2px solid #22c55e; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
+              <h3 style="color:#15803d; margin-bottom:4px;">🌱 Result: ${diseaseName} (${confidence}%)</h3>
+              <p style="font-size:14px; color:#166534; font-weight:700; margin-bottom:8px;">✅ Aapki fasol ekdum swasth hai!</p>
+              <hr style="margin:8px 0; border:0; border-top:1px solid #bbf7d0;">
+              <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.organic}</p>
+              <br>
+              <p style="font-size:14px; color:#166534; line-height:1.6;">${sol.chemical}</p>
+            </div>
+          `;
+        } else {
+          resultBox.innerHTML = `
+            <div style="background:#fff5f5; border:2px solid #ef4444; padding:16px; border-radius:8px; margin-top:12px; text-align:left;">
+              <h3 style="color:#991b1b; margin-bottom:4px;">🚨 Disease Detected: ${diseaseName}</h3>
+              <p style="font-size:13px; color:#991b1b; font-weight:700; margin-bottom:8px;">📌 Category: ${sol.status} (Confidence: ${confidence}%)</p>
+              <hr style="margin:8px 0; border:0; border-top:1px solid #fca5a5;">
+              <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.organic}</p>
+              <br>
+              <p style="font-size:14px; color:#7f1d1d; line-height:1.6;">${sol.chemical}</p>
+            </div>
+          `;
+
+          postData({
+            action: "addProblemByPhone",
+            phone: phone,
+            problemType: "AI Detected: " + diseaseName,
+            description: `Confidence: ${confidence}% | ${sol.status}`
+          });
+        }
+
+      } catch (err) {
+        console.error("AI Error:", err);
+        resultBox.innerHTML = "❌ AI Detection failed. Clear photo upload karein.";
+      }
+    }
+
+    // Weather API
+    async function getWeather() {
+      const city = document.getElementById("weatherCity").value.trim();
+      const resultBox = document.getElementById("weatherResult");
+      const tipBox = document.getElementById("farmingTip");
+
+      if (!city) return alert("Enter city or district name");
+
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        if (!geoData.results || !geoData.results.length) return alert("City not found!");
+
+        const { latitude: lat, longitude: lon, name } = geoData.results[0];
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const weatherData = await weatherRes.json();
+
+        const { temperature: temp, windspeed: wind, weathercode: code } = weatherData.current_weather;
+
+        let desc = "Clear Sky", tip = "Good condition for sowing and spraying pesticides.";
+        if (code >= 1 && code <= 3) { desc = "Partly Cloudy"; tip = "Ideal weather for field inspection."; }
+        else if (code >= 51 && code <= 99) { desc = "Rainy / Thunderstorm"; tip = "⚠️ Protect crops! Avoid irrigation today."; }
+
+        document.getElementById("cityName").innerText = name;
+        document.getElementById("weatherDesc").innerText = `🌤️ ${desc}`;
+        document.getElementById("tempVal").innerText = `${temp}°C`;
+        document.getElementById("humidityVal").innerText = `Wind: ${wind} km/h`;
+        tipBox.innerHTML = `💡 <b>Farmer Advisory:</b> ${tip}`;
+        resultBox.style.display = "block";
+      } catch (err) { console.error("Weather error:", err); }
+    }
+
+    // API Helpers
+    async function getData(url) { return (await fetch(url)).json(); }
+    async function postData(payload) {
+      return (await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+      })).json();
+    }
+
+    // Form Submissions
+    async function registerFarmer() {
+      const payload = {
+        action: "addFarmer",
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        village: document.getElementById("village").value,
+        district: document.getElementById("district").value,
+        state: document.getElementById("state").value
+      };
+      const res = await postData(payload);
+      document.getElementById("farmerMsg").innerHTML = res.success ? `✅ ${res.message}<br>Farmer ID: <b>${res.farmerId}</b>` : `❌ ${res.message}`;
+    }
+
+    async function addCrop() {
+      const payload = {
+        action: "addCropByPhone",
+        phone: document.getElementById("cropPhone").value,
+        cropName: document.getElementById("cropName").value,
+        landArea: document.getElementById("landArea").value,
+        season: document.getElementById("season").value,
+        sowingDate: document.getElementById("sowingDate").value
+      };
+      const res = await postData(payload);
+      document.getElementById("cropMsg").innerHTML = res.success ? `✅ ${res.message} for <b>${res.farmerName || ""}</b>` : `❌ ${res.message}`;
+    }
+
+    async function addProblem() {
+      const payload = {
+        action: "addProblemByPhone",
+        phone: document.getElementById("problemPhone").value,
+        problemType: document.getElementById("problemType").value,
+        description: document.getElementById("description").value
+      };
+      const res = await postData(payload);
+      document.getElementById("problemMsg").innerHTML = res.success ? `✅ ${res.message} for <b>${res.farmerName || ""}</b>` : `❌ ${res.message}`;
+    }
+
+    async function searchFarmer() {
+      const phone = document.getElementById("searchPhone").value.trim();
+      const res = await getData(`${API_URL}?action=searchFarmerByPhone&phone=${encodeURIComponent(phone)}`);
+      const box = document.getElementById("searchResult");
+
+      if (!res.success) { box.innerHTML = `<p>❌ ${res.message}</p>`; return; }
+
+      const crops = Array.isArray(res.crops) ? res.crops : [];
+      const problems = Array.isArray(res.problems) ? res.problems : [];
+
+      box.innerHTML = `
+        <h4>Farmer Details</h4>
+        <p><b>Name:</b> ${res.farmer.name || ""}</p>
+        <p><b>Farmer ID:</b> ${res.farmer.farmerId || ""}</p>
+        <p><b>Phone:</b> ${res.farmer.phone || ""}</p>
+        <p><b>Village:</b> ${res.farmer.village || ""}</p>
+        <p><b>District:</b> ${res.farmer.district || ""}</p>
+        <p><b>State:</b> ${res.farmer.state || ""}</p>
+        <h4 style="margin-top:14px;">Crop Records</h4>
+        ${crops.length ? `<ul>${crops.map(i => `<li>${i.cropName || ""} - ${i.landArea || ""} acres - ${i.season || ""}</li>`).join("")}</ul>` : `<p>No crop records.</p>`}
+        <h4 style="margin-top:14px;">Problem Reports</h4>
+        ${problems.length ? `<ul>${problems.map(i => `<li>${i.problemType || ""} - ${i.description || ""} - <b>${i.status || ""}</b></li>`).join("")}</ul>` : `<p>No problem reports.</p>`}
+      `;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadModel();
+      getWeather();
+    });
+  </script>
 </body>
 </html>
